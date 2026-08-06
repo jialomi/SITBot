@@ -286,6 +286,47 @@ async def remove_receive_name(update, context):
     )
     return ConversationHandler.END
 
+async def info_remove_entry(update, context):
+    query = update.callback_query
+    await query.answer()
+
+    name = query.from_user.first_name
+    chat_id = query.message.chat_id
+    thread_id = query.message.message_thread_id
+
+    entries = storage.find_entries(name)
+
+    if not entries:
+        msg = await context.bot.send_message(
+            chat_id = chat_id, message_thread_id=thread_id,
+            text = f"{name} wasn't found on any upcoming slots"
+        )
+        asyncio.create_task(_delete_after(msg, 10))
+        return
+
+    if len(entries) == 1:
+        date_str, timeslot = entries[0]
+        storage.remove_specific(name, date_str, timeslot)
+        boatstore.remove_assignment(date_str, timeslot, name)
+        await _post_updated_list(context, date_str)
+
+        confirm = await context.bot.send_message(
+            chat_id=chat_id, message_thread_id=thread_id, text="✅ Successfully removed."
+        )
+        asyncio.create_task(_delete_after(confirm, 10))
+        return
+
+    buttons = []
+    for date_str, timeslot in entries:
+        label = f"{renderer.format_date_label(date_str)} {timeslot}"
+        callback_data = f"remove|{name}|{date_str}|{timeslot}"
+        buttons.append([InlineKeyboardButton(label, callback_data=callback_data)])
+    keyboard = InlineKeyboardMarkup(buttons)
+    await context.bot.send_message(
+        chat_id=chat_id, message_thread_id=thread_id,
+        text="Which one do you want to remove?", reply_markup=keyboard
+    )
+
 
 # ---- "Coming" button ----
 
@@ -330,6 +371,11 @@ async def coming_receive_timeslot(update, context):
     date_str = context.user_data.pop("coming_date", None)
     storage.add(date_str, timeslot, name)
     await _post_updated_list(context, date_str)
+
+    confirm = await context.bot.send_message(
+        chat_id=chat_id, message_thread_id=int(ATTENDANCE_LIST_THREAD_ID), text="✅ Successfully added."
+    )
+    asyncio.create_task(_delete_after(confirm, 10))
     return ConversationHandler.END
 
 
@@ -374,6 +420,13 @@ async def handle_date_choice(update, context):
     await _post_updated_list(context, date_str)
     await _delete_message(context, query.message.chat_id, query.message.message_id)
 
+    confirm = await context.bot.send_message(
+        chat_id = query.message.chat_id,
+        message_thread_id=query.message.message_thread_id,
+        text="✅ Successfully added."
+    )
+    asyncio.create_task(_delete_after(confirm, 10))
+
 
 async def handle_remove_choice(update, context):
     query = update.callback_query
@@ -385,6 +438,12 @@ async def handle_remove_choice(update, context):
 
     await _post_updated_list(context, date_str)
     await _delete_message(context, query.message.chat_id, query.message.message_id)
+
+    confirm = await context.bot.send_message(
+        chat_id=query.message.chat_id,
+        message_thread_id=query.message.message_thread_id,
+        text="✅ Successfully removed."
+    )
 
 
 # ---- /assign ----
@@ -566,6 +625,7 @@ def main():
     app.add_handler(CommandHandler("whereami", whereami))
     app.add_handler(CommandHandler("attendance_clear", clear_command))
     app.add_handler(CommandHandler("assign", assign_command))
+    app.add_handler(CallbackQueryHandler(info_remove_entry, pattern=r"^info_remove$"))
     app.add_handler(CallbackQueryHandler(handle_date_choice, pattern=r"^add\|"))
     app.add_handler(CallbackQueryHandler(handle_remove_choice, pattern=r"^remove\|"))
     app.add_handler(CallbackQueryHandler(assign_date_choice, pattern=r"^assigndate\|"))
