@@ -1,13 +1,19 @@
 # SITBot — Canoe Sprint Attendance Bot
 
-Telegram bot that automates attendance list-taking for SIT Canoe Sprint training sessions.
+Telegram bot that automates attendance list-taking for SIT Canoe Sprint training sessions. Self-hosted, long-polling, Python (`python-telegram-bot` 21.6). Built around two topics in the same group chat: **Attendance INFO** (how the system works, plus quick sign-up buttons) and **Attendance List** (the live, auto-updated attendance list).
 
-## Commands
+## Features
 
-- `/attendance add <name> <date> <timeslot>` — add a name to a training slot
-- `/attendance remove <name> <timeslot>` — remove a name from the nearest upcoming date with that timeslot
-
-Every add/remove posts a fresh, fully updated list to the chat.
+- **Attendance INFO topic** — a pinned-style message explaining the system, with two buttons:
+  - **Add Attendance** — adds you (using your Telegram first name) after asking for a timeslot and date.
+  - **Remove Attendance** — removes you immediately if you're on one slot, or shows a picker if you're on several.
+- **Attendance List topic** — every add/remove reposts a fresh, fully updated list here, with a **Coming** button attached so anyone can add themselves to that date directly (past dates are rejected).
+- `/attendance_add` / `/attendance_remove` — usable by anyone to add/remove *any* name, not just their own. Supports a one-liner (`/attendance_add John Tan 7pm`) or a step-by-step flow (just `/attendance_add`, then answer the prompts). `/cancel` bails out of a step-by-step flow at any point. Both the command and its prompts stay in whichever topic you typed in, and clean up after themselves once done.
+- `/assign` (admin) — walks through assigning a boat to every signed-up name for a chosen date.
+- `/clearassign <ddmmyy>` (admin) — clears all boat assignments for one date (e.g. `/clearassign 060826` for 6 Aug 2026).
+- `/attendance_clear` (admin) — wipes all signups and boat assignments.
+- `/whereami` — replies with the current chat ID and topic (thread) ID; useful for finding IDs when adding new topics.
+- Success confirmations ("✅ Successfully added/removed") auto-delete after 10 seconds so the chat doesn't fill up with noise.
 
 ## Setup
 
@@ -17,19 +23,37 @@ Every add/remove posts a fresh, fully updated list to the chat.
    source venv/bin/activate
    pip install -r requirements.txt
    ```
-2. Copy `.env.example` to `.env` and fill in your bot token from @BotFather.
-3. Run the bot:
+2. Copy `.env.example` to `.env` and fill in:
+   - `TELEGRAM_BOT_TOKEN` — from @BotFather
+   - `ADMIN_USER_IDS` — comma-separated Telegram user IDs allowed to run admin commands
+   - `ATTENDANCE_CHAT_ID` — the group's chat ID (shared by both topics)
+   - `ATTENDANCE_INFO_THREAD_ID` / `ATTENDANCE_LIST_THREAD_ID` — the `message_thread_id` of each topic (use `/whereami` inside each topic to find these)
+3. Make sure the bot is a group admin with **Delete Messages** permission — several features (message cleanup, `/attendance_clear`) rely on it.
+4. Run the bot:
    ```
    python -m bot.main
    ```
+   On startup, the console logs each handler file as it's auto-loaded.
 
 ## Project structure
 
-- `bot/storage.py` — JSON-backed data layer (`data/signups.json`)
-- `bot/parser.py` — command parsing and date/timeslot normalization
-- `bot/renderer.py` — formats signup data into the chat's list text format
-- `bot/main.py` — bot runtime, wires everything together
+```
+bot/
+  common.py            — shared constants, env config, and helper functions
+  storage.py           — JSON-backed signups (data/signups.json)
+  boatstore.py          — JSON-backed boat assignments (data/assignments.json)
+  parser.py             — command parsing and timeslot normalization
+  renderer.py            — formats the posted attendance list
+  main.py                — entrypoint: builds the bot and auto-registers handlers
+  handlers/
+    commands/            — one file per CommandHandler (e.g. /assign, /whereami)
+    callbacks/            — one file per CallbackQueryHandler (button taps)
+    messages/             — one file per MessageHandler (e.g. !info trigger)
+    others/               — ConversationHandlers (multi-step flows like /attendance_add)
+```
+
+Handlers are auto-discovered: `main.py` scans each `handlers/` subfolder and registers every file that defines a module-level `handler` variable. Adding a new command/callback/message just means dropping a new file in the right folder — no changes to `main.py` needed.
 
 ## Status
 
-Skeleton only — see TODOs in each module.
+Actively used and maintained. See `PROJECT_STATUS.md` for session handoff notes (not tracked in git).
