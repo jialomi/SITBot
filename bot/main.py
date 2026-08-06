@@ -291,9 +291,15 @@ async def remove_receive_name(update, context):
 
 async def coming_entry(update, context):
     query = update.callback_query
-    await query.answer()
 
     _, date_str = query.data.split("|")
+
+    if date.fromisoformat(date_str) < date.today():
+        await query.answer("This date has already passed.", show_alert=True)
+        return ConversationHandler.END
+
+    await query.answer()
+
     name = query.from_user.first_name
     chat_id = query.message.chat_id
 
