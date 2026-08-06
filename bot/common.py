@@ -5,8 +5,9 @@ from datetime import date, timedelta, datetime
 from dotenv import load_dotenv
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ConversationHandler, CommandHandler
+from telegram.error import BadRequest
 
-from bot import parser, storage, renderer, boatstore
+from bot import parser, storage, renderer, boatstore, liststore
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -79,15 +80,38 @@ async def _send_date_picker(context, chat_id, name, timeslot, thread_id=None):
 
 async def _post_updated_list(context, date_str):
     """Posts the rendered list for a date, with a 'Coming' button, or nothing if it's empty."""
+    liststore.cleanup_old()
     slots = storage.get_by_date(date_str)
+    message_id = liststore.get_message_id(date_str)
+
     if not slots:
+        if message_id:
+            await _delete_message(context, int(ATTENDANCE_CHAT_ID), message_id)
+            liststore.clear_message_id(date_str)
         return
+
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton("Coming", callback_data=f"coming|{date_str}")]]
     )
-    await context.bot.send_message(
-        chat_id=int(ATTENDANCE_CHAT_ID), message_thread_id=int(ATTENDANCE_LIST_THREAD_ID), text=renderer.render(date_str, slots), reply_markup=keyboard
+    text = renderer.render(date_str, slots)
+
+    if message_id:
+        try:
+            await context.bot.edit_message_text(
+                chat_id=int(ATTENDANCE_CHAT_ID), message_id=message_id,
+                text=text, reply_markup=keyboard,
+            )
+            return
+        except BadRequest as e:
+            if "message is not modified" in str(e).lower():
+                return
+            liststore.clear_message_id(date_str)
+
+    msg = await context.bot.send_message(
+        chat_id=int(ATTENDANCE_CHAT_ID), message_thread_id=int(ATTENDANCE_LIST_THREAD_ID),
+        text=text, reply_markup=keyboard,
     )
+    liststore.set_message_id(date_str, msg.message_id)
 
 
 async def _do_remove(context, chat_id, name, timeslot):

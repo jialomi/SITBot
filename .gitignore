@@ -4,5 +4,6 @@ __pycache__/
 *.pyc
 data/signups.json
 data/assignments.json
+data/list_messages.json
 PROJECT_STATUS.md
 
