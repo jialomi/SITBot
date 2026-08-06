@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+*.pyc
+data/signups.json
+data/assignments.json
+PROJECT_STATUS.md
+
