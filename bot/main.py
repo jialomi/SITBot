@@ -16,7 +16,7 @@ TODO:
 
 import os
 import asyncio
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from dotenv import load_dotenv
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -469,6 +469,32 @@ async def assign_command(update, context):
         "Assign boats for which date?", reply_markup=InlineKeyboardMarkup(buttons)
     )
 
+# ---- /clearassign ----
+
+async def clearassign_command(update, context):
+    if update.effective_user.id not in ADMIN_USER_IDS:
+        msg = await update.message.reply_text("You don't have permission to do that.")
+        asyncio.create_task(_delete_after(msg, 3))
+        return
+
+    text = update.message.text
+    if not _command_has_args(text):
+        msg = await update.message.reply_text("Usage, /clearassign ddmmyy (e.g. for 8 Aug 2026 -> 060826)")
+        asyncio.create_task(_delete_after(msg, 5))
+        return
+
+    raw = text.strip().split(maxsplit=1)[1]
+    try:
+        date_str = datetime.strptime(raw, "%d%m%y").date().isoformat()
+    except ValueError:
+        msg = await update.message.reply_text("Couldn't pase that date. Use ddmmyy, e.g. 060826.")
+        asyncio.create_task(_delete_after(msg, 5))
+        return
+
+    boatstore.clear_date(date_str)
+    msg = await update.message.reply_text(f"Cleared boat assignments for {renderer.format_date_label(date_str)}.")
+    asyncio.create_task(_delete_after(msg, 5))
+
 
 async def _prompt_next_boat(context, chat_id):
     """Reads assign_* progress out of chat_data and either prompts for the
@@ -625,6 +651,7 @@ def main():
     app.add_handler(CommandHandler("whereami", whereami))
     app.add_handler(CommandHandler("attendance_clear", clear_command))
     app.add_handler(CommandHandler("assign", assign_command))
+    app.add_handler(CommandHandler("clearassign", clearassign_command))
     app.add_handler(CallbackQueryHandler(info_remove_entry, pattern=r"^info_remove$"))
     app.add_handler(CallbackQueryHandler(handle_date_choice, pattern=r"^add\|"))
     app.add_handler(CallbackQueryHandler(handle_remove_choice, pattern=r"^remove\|"))

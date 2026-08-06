@@ -80,6 +80,12 @@ def remove_assignment(date_str, timeslot, name):
             data.pop(date_str, None)
         save_assignments(data)
 
+def clear_date(date_str):
+    """Clears all boat assignments for one date. No-op if none exist."""
+    data = load_assignments()
+    if date_str in data:
+        data.pop(date_str)
+        save_assignments(data)
 
 def clear_all():
     save_assignments({})
