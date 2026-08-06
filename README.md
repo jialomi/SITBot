@@ -7,13 +7,19 @@ Telegram bot that automates attendance list-taking for SIT Canoe Sprint training
 - **Attendance INFO topic** — a pinned-style message explaining the system, with two buttons:
   - **Add Attendance** — adds you (using your Telegram first name) after asking for a timeslot and date.
   - **Remove Attendance** — removes you immediately if you're on one slot, or shows a picker if you're on several.
-- **Attendance List topic** — every add/remove reposts a fresh, fully updated list here, with a **Coming** button attached so anyone can add themselves to that date directly (past dates are rejected).
-- `/attendance_add` / `/attendance_remove` — usable by anyone to add/remove *any* name, not just their own. Supports a one-liner (`/attendance_add John Tan 7pm`) or a step-by-step flow (just `/attendance_add`, then answer the prompts). `/cancel` bails out of a step-by-step flow at any point. Both the command and its prompts stay in whichever topic you typed in, and clean up after themselves once done.
-- `/assign` (admin) — walks through assigning a boat to every signed-up name for a chosen date.
-- `/clearassign <ddmmyy>` (admin) — clears all boat assignments for one date (e.g. `/clearassign 060826` for 6 Aug 2026).
-- `/attendance_clear` (admin) — wipes all signups and boat assignments.
-- `/whereami` — replies with the current chat ID and topic (thread) ID; useful for finding IDs when adding new topics.
+- **Attendance List topic** — one message per date, kept updated in place: the first signup for a date posts a new message (with a **Coming** button attached so anyone can add themselves to that date directly — past dates are rejected), and every add/remove after that edits the same message rather than posting a new one. If a date's list empties out, the message is deleted; the next signup for that date starts fresh.
 - Success confirmations ("✅ Successfully added/removed") auto-delete after 10 seconds so the chat doesn't fill up with noise.
+
+### User commands
+
+- `/attendance_add` / `/attendance_remove` — usable by anyone to add/remove *any* name, not just their own. Supports a one-liner (`/attendance_add John Tan 7pm`) or a step-by-step flow (just `/attendance_add`, then answer the prompts). `/cancel` bails out of a step-by-step flow at any point. Both the command and its prompts stay in whichever topic you typed in, and clean up after themselves once done.
+
+### Admin commands
+
+- `/assign` — walks through assigning a boat to every signed-up name for a chosen date.
+- `/clearassign <ddmmyy>` — clears all boat assignments for one date (e.g. `/clearassign 060826` for 6 Aug 2026).
+- `/attendance_clear` — wipes all signups, boat assignments, and tracked list messages.
+- `/whereami` — replies with the current chat ID and topic (thread) ID; useful for finding IDs when adding new topics. Not permission-gated, but only really needed for setup/admin work.
 
 ## Setup
 
@@ -42,6 +48,7 @@ bot/
   common.py            — shared constants, env config, and helper functions
   storage.py           — JSON-backed signups (data/signups.json)
   boatstore.py          — JSON-backed boat assignments (data/assignments.json)
+  liststore.py           — tracks which message ID holds each date's posted list (data/list_messages.json), so it can be edited in place
   parser.py             — command parsing and timeslot normalization
   renderer.py            — formats the posted attendance list
   main.py                — entrypoint: builds the bot and auto-registers handlers
