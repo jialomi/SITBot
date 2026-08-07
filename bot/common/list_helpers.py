@@ -25,20 +25,18 @@ async def _send_date_picker(context, chat_id, name, timeslot, thread_id=None):
 
 async def _post_updated_list(context, date_str):
     """Keeps one message per date, edited in place. Sends a new message only
-    the first time a date gets a signup; edits it on every add/remove after
-    that. If the date ends up with no signups, the message is deleted."""
+    the first time a date gets a signup; edits it (even down to a blank
+    list) on every add/remove after that, so the message and its buttons
+    never disappear."""
     liststore.cleanup_old()
     slots = storage.get_by_date(date_str)
     message_id = liststore.get_message_id(date_str)
 
-    if not slots:
-        if message_id:
-            await _delete_message(context, int(ATTENDANCE_CHAT_ID), message_id)
-            liststore.clear_message_id(date_str)
-        return
-
     keyboard = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("Coming", callback_data=f"coming|{date_str}")]]
+        [[
+            InlineKeyboardButton("Coming", callback_data=f"coming|{date_str}"),
+            InlineKeyboardButton("Remove Me", callback_data=f"removeme|{date_str}")
+        ]]
     )
     text = renderer.render(date_str, slots)
 

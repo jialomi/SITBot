@@ -22,7 +22,7 @@ async def handle_remove_choice(update, context):
         message_thread_id=query.message.message_thread_id,
         text="✅ Successfully removed."
     )
-    asyncio.create_task(_delete_after(confirm, 10))
+    asyncio.create_task(_delete_after(confirm, 5))
 
 
 handler = CallbackQueryHandler(handle_remove_choice, pattern=r"^remove\|")

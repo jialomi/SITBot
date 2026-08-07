@@ -55,7 +55,7 @@ async def coming_receive_timeslot(update, context):
     confirm = await context.bot.send_message(
         chat_id=chat_id, message_thread_id=int(ATTENDANCE_LIST_THREAD_ID), text="✅ Successfully added."
     )
-    asyncio.create_task(_delete_after(confirm, 10))
+    asyncio.create_task(_delete_after(confirm, 5))
     return ConversationHandler.END
 
 
