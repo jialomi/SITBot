@@ -16,10 +16,15 @@ async def post_daily_list(context):
         return
 
     keyboard = InlineKeyboardMarkup(
-        [[
-            InlineKeyboardButton("Coming", callback_data=f"coming|{tomorrow_str}"),
-            InlineKeyboardButton("Remove Me", callback_data=f"removeme|{tomorrow_str}"),
-        ]]
+        [
+            [
+                InlineKeyboardButton("Coming", callback_data=f"coming|{tomorrow_str}"),
+                InlineKeyboardButton("Remove Me", callback_data=f"removeme|{tomorrow_str}"),
+            ],
+            [
+                InlineKeyboardButton("Crew", callback_data=f"crew|{tomorrow_str}")
+            ],
+        ]
     )
     msg = await context.bot.send_message(
         chat_id=int(ATTENDANCE_CHAT_ID), message_thread_id=int(ATTENDANCE_LIST_THREAD_ID),
@@ -29,6 +34,6 @@ async def post_daily_list(context):
 
 job = {
     "callback": post_daily_list,
-    "time": dt_time(hour=15, minute=12, tzinfo=ZoneInfo("Asia/Singapore")),
+    "time": dt_time(hour=2, minute=23, tzinfo=ZoneInfo("Asia/Singapore")),
     "name": "post_daily_list"
 }

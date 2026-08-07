@@ -28,14 +28,22 @@ def normalize_timeslot(raw):
         raise ValueError(f"Can't understand timeslot: {raw}")
 
     hour = int(match.group(1))
-    minute = match.group(2) or "00"
+    minute = int(match.group(2) or "00")
     meridiem = match.group(3)
+
     if meridiem == "pm" and hour != 12:
         hour += 12
     if meridiem == "am" and hour == 12:
         hour = 0
 
-    return f"{hour:02d}{minute}"
+    if not (0 <= hour <= 23) or not (0 <= minute <= 59):
+        raise ValueError(f"{raw} is not a valid time, Try Again")
+
+    if not (700 <= hour * 100 + minute <= 1700):
+        raise ValueError(f"Timeslot must be between 7AM to 5PM, Try Again")
+
+    
+    return f"{hour:02d}{minute:02d}"
 
 def _parse_args(text, expected_command):
     parts = text.strip().split()

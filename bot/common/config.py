@@ -31,6 +31,7 @@ Try to have your attendance in by <b>8PM the night before</b> — it helps with 
 The attendance list itself is posted and kept updated in the Attendance List topic."""
 
 ADD_NAME, ADD_TIMESLOT = range(2)
+CREW_NAME, CREW_TIMESLOT = range(2)
 INFO_ADD_TIMESLOT = 0
 REMOVE_NAME = 0
 COMING_TIMESLOT = 0

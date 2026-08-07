@@ -23,6 +23,7 @@ async def remove_entry(update, context):
     except ValueError as e:
         msg = await update.message.reply_text(str(e))
         asyncio.create_task(_delete_after(msg, 10))
+        await _delete_message(context, update.effective_chat.id, update.message.message_id)
         return ConversationHandler.END
 
     await _do_remove(context, update.effective_chat.id, parsed["name"], parsed["timeslot"])

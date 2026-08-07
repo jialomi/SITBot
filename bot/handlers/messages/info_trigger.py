@@ -9,7 +9,10 @@ async def info_trigger(update, context):
         [
             InlineKeyboardButton("Add Attendance", callback_data="info_add"),
             InlineKeyboardButton("Remove Attendance", callback_data="info_remove"),
-        ]
+        ],
+        [
+            InlineKeyboardButton("Crew", callback_data="crew"),
+        ],
     ])
     await context.bot.send_message(
         chat_id=int(ATTENDANCE_CHAT_ID),

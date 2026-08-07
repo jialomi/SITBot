@@ -25,7 +25,7 @@ async def coming_entry(update, context):
     chat_id = query.message.chat_id
 
     prompt = await context.bot.send_message(
-        chat_id=chat_id, message_thread_id=int(ATTENDANCE_LIST_THREAD_ID), text=f"What time would you like to go down, {name}?"
+        chat_id=chat_id, message_thread_id=int(ATTENDANCE_LIST_THREAD_ID), text=f"What time would you like to go down, {name}? (e.g. 0700 or 7am)"
     )
     context.user_data["coming_name"] = name
     context.user_data["coming_date"] = date_str
@@ -40,6 +40,7 @@ async def coming_receive_timeslot(update, context):
     except ValueError as e:
         msg = await update.message.reply_text(str(e))
         asyncio.create_task(_delete_after(msg, 10))
+        await _delete_message(context, update.effective_chat.id, update.message.message_id)
         return COMING_TIMESLOT
 
     chat_id = update.effective_chat.id

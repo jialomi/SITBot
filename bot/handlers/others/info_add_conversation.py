@@ -15,7 +15,7 @@ async def info_add_entry(update, context):
 
     prompt = await context.bot.send_message(
         chat_id=chat_id, message_thread_id=thread_id,
-        text=f"What timeslot would you like, {name}?"
+        text=f"What timeslot would you like, {name}? (e.g. 0700 or 7am)"
     )
     context.user_data["info_add_name"] = name
     context.user_data["info_add_thread_id"] = thread_id
@@ -30,6 +30,7 @@ async def info_add_receive_timeslot(update, context):
     except ValueError as e:
         msg = await update.message.reply_text(str(e))
         asyncio.create_task(_delete_after(msg, 10))
+        await _delete_message(context, update.effective_chat.id, update.message.message_id)
         return INFO_ADD_TIMESLOT
 
     chat_id = update.effective_chat.id

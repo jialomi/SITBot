@@ -33,10 +33,15 @@ async def _post_updated_list(context, date_str):
     message_id = liststore.get_message_id(date_str)
 
     keyboard = InlineKeyboardMarkup(
-        [[
-            InlineKeyboardButton("Coming", callback_data=f"coming|{date_str}"),
-            InlineKeyboardButton("Remove Me", callback_data=f"removeme|{date_str}")
-        ]]
+        [
+            [
+                InlineKeyboardButton("Coming", callback_data=f"coming|{date_str}"),
+                InlineKeyboardButton("Remove Me", callback_data=f"removeme|{date_str}")
+            ],
+            [
+                InlineKeyboardButton("Crew", callback_data=f"crew|{date_str}")
+            ]
+        ]
     )
     text = renderer.render(date_str, slots)
 

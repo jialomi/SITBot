@@ -22,6 +22,7 @@ async def add_entry(update, context):
     except ValueError as e:
         msg = await update.message.reply_text(str(e))
         asyncio.create_task(_delete_after(msg, 10))
+        await _delete_message(context, update.effective_chat.id, update.message.message_id)
         return ConversationHandler.END
 
     await _send_date_picker(
@@ -51,6 +52,7 @@ async def add_receive_timeslot(update, context):
     except ValueError as e:
         msg = await update.message.reply_text(str(e))
         asyncio.create_task(_delete_after(msg, 10))
+        await _delete_message(context, update.effective_chat.id, update.message.message_id)
         return ADD_TIMESLOT
 
     prev_prompt_id = context.user_data.pop("prompt_msg_id", None)
