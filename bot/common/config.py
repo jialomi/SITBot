@@ -13,25 +13,19 @@ ATTENDANCE_CHAT_ID = os.getenv("ATTENDANCE_CHAT_ID")
 ATTENDANCE_INFO_THREAD_ID = os.getenv("ATTENDANCE_INFO_THREAD_ID")
 ATTENDANCE_LIST_THREAD_ID = os.getenv("ATTENDANCE_LIST_THREAD_ID")
 
-INFO_TEXT = """📋 <b>Attendance System — How It Works</b>
+INFO_TEXT = """📋 <b>Attendance System</b>
 
-Use this to sign yourself up for training slots, or manage attendance for others.
-
-<b>Quick sign-up (buttons below)</b>
-- Tap <b>Add Attendance</b> — you'll be asked which date and timeslot, then you're added.
-- Tap <b>Remove Attendance</b> — if you're only signed up for one slot, you're removed right away. If you're on multiple, you'll get a list to pick from.
-
-<b>Commands (for adding/removing anyone, not just yourself)</b>
-- <code>/attendance_add</code> — walks you through adding a name, or type it all in one line: <code>/attendance_add John Tan 7pm</code>
-- <code>/attendance_remove</code> — same idea, for removing someone: <code>/attendance_remove John Tan 7pm</code>
+Every day at 8am, the bot posts the next day's attendance list in the Attendance List topic. Tap <b>Coming</b> to add yourself, <b>Remove Me</b> to take yourself off, or <b>Crew</b> if you're signing up as a K2/K4 pair (e.g. jer/glenn or jer/jw/gab/jos).
 
 <b>Cut-off</b>
-Try to have your attendance in by <b>8PM the night before</b> — it helps with planning. Last-minute changes are still fine, so don't stress if something comes up late.
+All attendance to be sent in by <b>8pm</b> every day, before forwarding to coach, so he knows who's down beforehand.
 
-The attendance list itself is posted and kept updated in the Attendance List topic."""
+If sent after 8pm, send it in the group chat with coach instead. Indicate your reason for submitting attendance late when you update it — this includes last-minute additions when your schedule suddenly clears up.
+
+This is for accountability, as all of us are using school equipment."""
 
 ADD_NAME, ADD_TIMESLOT = range(2)
 CREW_NAME, CREW_TIMESLOT = range(2)
-INFO_ADD_TIMESLOT = 0
 REMOVE_NAME = 0
 COMING_TIMESLOT = 0
+REMOVE_OTHER_NAME = 0

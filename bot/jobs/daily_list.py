@@ -13,7 +13,7 @@ async def post_daily_list(context):
     tomorrow_str = (date.today() + timedelta(days=1)).isoformat()
 
     if liststore.get_message_id(tomorrow_str):
-        return
+        return False
 
     keyboard = InlineKeyboardMarkup(
         [
@@ -22,7 +22,8 @@ async def post_daily_list(context):
                 InlineKeyboardButton("Remove Me", callback_data=f"removeme|{tomorrow_str}"),
             ],
             [
-                InlineKeyboardButton("Crew", callback_data=f"crew|{tomorrow_str}")
+                InlineKeyboardButton("Crew", callback_data=f"crew|{tomorrow_str}"),
+                InlineKeyboardButton("Remove Crew/Others", callback_data=f"removeother|{tomorrow_str}")
             ],
         ]
     )
@@ -31,9 +32,10 @@ async def post_daily_list(context):
         text=renderer.render(tomorrow_str, {}), reply_markup=keyboard,
     )
     liststore.set_message_id(tomorrow_str, msg.message_id)
+    return True
 
 job = {
     "callback": post_daily_list,
-    "time": dt_time(hour=2, minute=23, tzinfo=ZoneInfo("Asia/Singapore")),
+    "time": dt_time(hour=8, minute=0, tzinfo=ZoneInfo("Asia/Singapore")),
     "name": "post_daily_list"
 }

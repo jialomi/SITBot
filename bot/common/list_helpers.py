@@ -39,7 +39,8 @@ async def _post_updated_list(context, date_str):
                 InlineKeyboardButton("Remove Me", callback_data=f"removeme|{date_str}")
             ],
             [
-                InlineKeyboardButton("Crew", callback_data=f"crew|{date_str}")
+                InlineKeyboardButton("Crew", callback_data=f"crew|{date_str}"),
+                InlineKeyboardButton("Remove Crew/Others", callback_data=f"removeother|{date_str}")
             ]
         ]
     )

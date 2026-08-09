@@ -3,7 +3,7 @@ import asyncio
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler, MessageHandler, filters
 
 from bot.common import (
-    CREW_NAME, CREW_TIMESLOT, _delete_after, _delete_message, _send_date_picker,
+    CREW_NAME, CREW_TIMESLOT, _delete_after, _delete_message,
     _post_updated_list, cancel,
 )
 from bot import parser, storage
@@ -15,11 +15,7 @@ async def crew_entry(update, context):
     chat_id = query.message.chat_id
     thread_id = query.message.message_thread_id
 
-    # "crew" (from INFO topic) has no date attached, so the date picker
-    # still runs at the end. "crew|<date>" (from a posted list) is tied
-    # to that specific date, skipping the picker entirely.
-    parts = query.data.split("|")
-    crew_date = parts[1] if len(parts) > 1 else None
+    _, crew_date = query.data.split("|")
 
     prompt = await context.bot.send_message(
         chat_id=chat_id, message_thread_id=thread_id,
@@ -65,25 +61,19 @@ async def crew_receive_timeslot(update, context):
     thread_id = context.user_data.pop("crew_thread_id", None)
     crew_date = context.user_data.pop("crew_date", None)
 
-    if crew_date:
-        storage.add(crew_date, timeslot, name)
-        await _post_updated_list(context, crew_date)
+    storage.add(crew_date, timeslot, name)
+    await _post_updated_list(context, crew_date)
 
-        confirm = await context.bot.send_message(
-            chat_id=chat_id, message_thread_id=thread_id, text="✅ Successfully added."
-        )
-        asyncio.create_task(_delete_after(confirm, 5))
-    else:
-        await _send_date_picker(context, chat_id, name, timeslot, thread_id=thread_id)
+    confirm = await context.bot.send_message(
+        chat_id=chat_id, message_thread_id=thread_id, text="✅ Successfully added."
+    )
+    asyncio.create_task(_delete_after(confirm, 5))
 
     return ConversationHandler.END
 
 
 handler = ConversationHandler(
-    entry_points=[
-        CallbackQueryHandler(crew_entry, pattern=r"^crew$"),
-        CallbackQueryHandler(crew_entry, pattern=r"^crew\|"),
-    ],
+    entry_points=[CallbackQueryHandler(crew_entry, pattern=r"^crew\|")],
     states={
         CREW_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, crew_receive_name)],
         CREW_TIMESLOT: [MessageHandler(filters.TEXT & ~filters.COMMAND, crew_receive_timeslot)],
