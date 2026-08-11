@@ -1,4 +1,5 @@
 import asyncio
+from datetime import date
 
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler, MessageHandler, filters
 
@@ -11,11 +12,16 @@ from bot import parser, storage
 
 async def crew_entry(update, context):
     query = update.callback_query
+
+    _, crew_date = query.data.split("|")
+
+    if date.fromisoformat(crew_date) < date.today():
+        await query.answer("This date has already passed.", show_alert=True)
+        return ConversationHandler.END
+
     await query.answer()
     chat_id = query.message.chat_id
     thread_id = query.message.message_thread_id
-
-    _, crew_date = query.data.split("|")
 
     prompt = await context.bot.send_message(
         chat_id=chat_id, message_thread_id=thread_id,

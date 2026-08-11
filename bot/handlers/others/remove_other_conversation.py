@@ -71,7 +71,7 @@ async def remove_other_receive_name(update, context):
     return ConversationHandler.END
 
 handler = ConversationHandler(
-    entry_points=[CallbackQueryHandler(remove_other_entry, pattern="^removeother\|")],
+    entry_points=[CallbackQueryHandler(remove_other_entry, pattern=r"^removeother\|")],
     states={
         REMOVE_OTHER_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, remove_other_receive_name)]
     },
